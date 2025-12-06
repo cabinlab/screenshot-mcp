@@ -97,7 +97,31 @@ Take a screenshot of monitor 1 and save to folder "../docs/images"
 
 ## API Reference
 
-The MCP server provides a single tool:
+The MCP server provides two tools:
+
+### `list_windows`
+
+**Description:** List all available windows with numbers for easy selection.
+
+**Parameters:**
+- `filter` (optional): Filter windows by title or process name
+- `format` (optional): Output format
+  - `"simple"` - Basic numbered list (default)
+  - `"detailed"` - Include process IDs and window handles
+
+**Returns:**
+- Numbered list of windows with their titles and process names
+- Total count of windows found
+
+**Example:**
+```
+list_windows()
+// Output:
+// 1. Chrome - Google Search (Process: chrome)
+// 2. Visual Studio Code (Process: Code)
+// 3. screenshots (Process: explorer)
+// Total windows: 3
+```
 
 ### `take_screenshot`
 
@@ -109,6 +133,7 @@ The MCP server provides a single tool:
   - `1`, `2`, etc. - Capture specific monitor by index
 - `windowTitle` (optional): Capture a specific window by its title (partial match supported)
 - `processName` (optional): Capture a specific window by process name (e.g., "notepad.exe" or "notepad")
+- `windowNumber` (optional): Capture a specific window by its number from list_windows output
 - `folder` (optional): Custom folder path to save the screenshot
   - Supports WSL paths: `/mnt/c/Users/...`
   - Supports Windows paths: `C:\Users\...`
@@ -120,9 +145,19 @@ The MCP server provides a single tool:
 - Error message if capture fails
 
 **Notes:** 
+- `windowNumber` takes precedence over `windowTitle` and `processName`
 - If both `windowTitle` and `processName` are provided, `windowTitle` takes precedence
 - Custom folders are created automatically if they don't exist
 - Path formats are automatically converted between WSL and Windows as needed
+
+**Workflow Example:**
+```
+// First, list windows to see what's available
+list_windows()
+
+// Then capture by number
+take_screenshot(windowNumber=2, filename="vscode.png")
+```
 
 ## Technical Details
 
@@ -187,6 +222,36 @@ The server automatically converts between WSL and Windows path formats:
 - Ensure your paths are accessible from both WSL and Windows
 
 ## Recent Updates
+
+### v1.3.4 (Fork)
+- **Better UX guidance** - Tool descriptions guide agents to display window lists properly
+- **Pre-check for minimized windows** - Prevents screenshot attempts on minimized windows
+- **Improved output formatting** - Adds helpful tips to window list output
+- **Cleaner error messages** - Shows user-friendly errors instead of PowerShell commands
+
+### v1.3.3 (Fork)
+- **Improved error handling** - Clean error messages instead of raw PowerShell output
+- **Better error extraction** - Properly parses thrown errors from PowerShell scripts
+- **Graceful error display** - No more CLIXML garbage in error messages
+
+### v1.3.2 (Fork)
+- **Window state detection** - Shows [MINIMIZED] or [MAXIMIZED] indicators in window lists
+- **Prevents capturing minimized windows** - Throws helpful error if trying to capture a minimized window
+- **Enhanced window information** - Detailed view now includes window state (Normal/Minimized/Maximized)
+- **Better error handling** - Clear messaging when attempting invalid captures
+
+### v1.3.1 (Fork)
+- **Added list_windows tool** - List all available windows with numbers for easy selection
+- **Window selection by number** - Use `windowNumber` parameter to capture windows by their list number
+- **Improved discovery workflow** - No more error-based window discovery
+- **Filter support** - Filter windows by title or process name in list_windows
+- **Detailed view option** - Get process IDs and window handles with format="detailed"
+
+### v1.3.0 (Fork)
+- **Improved window enumeration** - Now uses Windows API EnumWindows instead of Get-Process
+- **Better Explorer window detection** - Can now find File Explorer and other system windows
+- **More comprehensive window listing** - Shows all visible windows with titles
+- **Maintains all existing features** - Fully backward compatible
 
 ### v1.2.0
 - Added custom folder support with the `folder` parameter
